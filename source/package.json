@@ -1,0 +1,8 @@
+{
+  "name": "commonplace",
+  "private": true,
+  "description": "Source for app.js. Rebuild with: npm install && npm run build",
+  "scripts": { "build": "esbuild main.js --bundle --format=esm --minify --target=safari15,chrome100 --legal-comments=none --outfile=../app.js" },
+  "dependencies": { "firebase": "13.2.0" },
+  "devDependencies": { "esbuild": "0.25.0" }
+}
