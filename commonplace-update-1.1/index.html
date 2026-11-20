@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EFE6DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#18213A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commonplace">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="A commonplace book: capture quotes, thoughts and takeaways, reflect on one card a day.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Commonplace</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: a library card catalogue. Every note is a ruled index card on a grey-green desk; the red header rule is the accent, and in Reflect it drains as the 5-minute timer */
+  /* palette: Space Cadet ink, Caput Mortuum rules, Sky ruled lines; card stock tinted by kind (Peony/Rose quotes, Leaf thoughts, Sky takeaways); Tan/Coffee book spines */
+  --desk:#EFE6DD;
+  --card:#FFFBF7;
+  --ink:#25344F;
+  --muted:#617891;
+  --line:#E2D5CA;
+  --rule:#C9D0E0;
+  --red:#632024;
+  --red-soft:#EBD3D2;
+  --on-accent:#FFFBF7;
+  --quote:#8A3440;    --quote-tint:#FCEFEB;
+  --thought:#65613F;  --thought-tint:#F5F3E2;
+  --takeaway:#4A6283; --takeaway-tint:#EEF1F7;
+  --spine:#D5B893;    --spine-on:#6F4D38;
+  --tag-bg:#F1ECF3;
+  --logo-back:#D8A4AF; --logo-card:#FFFBF7; --logo-leaf:#8D8B4C;
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --shadow:0 1px 0 rgba(37,52,79,.05), 0 8px 22px -12px rgba(37,52,79,.28);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#18213A; --card:#22304A; --ink:#F7DDD5; --muted:#AFB8CD; --line:#34435F;
+    --rule:#34466A; --red:#D8A4AF; --red-soft:#4A3446; --on-accent:#25344F;
+    --quote:#E3A9B3; --quote-tint:#2A2F4B; --thought:#C1BC77; --thought-tint:#263245; --takeaway:#AFB8CD; --takeaway-tint:#22344F;
+    --spine:#6F4D38; --spine-on:#D5B893; --tag-bg:#2C3654;
+    --logo-back:#D8A4AF; --logo-card:#F7DDD5; --logo-leaf:#C1BC77;
+    --shadow:0 1px 0 rgba(0,0,0,.2), 0 10px 24px -12px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#18213A; --card:#22304A; --ink:#F7DDD5; --muted:#AFB8CD; --line:#34435F;
+  --rule:#34466A; --red:#D8A4AF; --red-soft:#4A3446; --on-accent:#25344F;
+  --quote:#E3A9B3; --quote-tint:#2A2F4B; --thought:#C1BC77; --thought-tint:#263245; --takeaway:#AFB8CD; --takeaway-tint:#22344F;
+  --spine:#6F4D38; --spine-on:#D5B893; --tag-bg:#2C3654;
+  --logo-back:#D8A4AF; --logo-card:#F7DDD5; --logo-leaf:#C1BC77;
+  --shadow:0 1px 0 rgba(0,0,0,.2), 0 10px 24px -12px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+.k-quote{--k:var(--quote);--kt:var(--quote-tint)}
+.k-thought{--k:var(--thought);--kt:var(--thought-tint)}
+.k-takeaway{--k:var(--takeaway);--kt:var(--takeaway-tint)}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0;min-height:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--display);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3{font-weight:500;text-wrap:balance;margin:0}
+h2{font-size:30px;font-style:italic;letter-spacing:-.01em;line-height:1.15}
+h3{font-size:21px}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+.mono,.label{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* masthead */
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:22px clamp(16px,4vw,40px) 14px;max-width:1160px;margin:0 auto;border-bottom:1px solid var(--line)}
+.wordmark{text-decoration:none;display:flex;align-items:center;gap:14px}
+.logo{width:52px;height:52px;flex:0 0 auto;transition:transform .3s ease}
+.wordmark:hover .logo{transform:rotate(-4deg)}
+@media (max-width:640px){.logo{width:42px;height:42px}}
+.wm{font-style:italic;font-weight:500;font-size:clamp(30px,4vw,40px);letter-spacing:-.015em;line-height:1;display:block}
+.wm-sub{display:block;margin-top:7px}
+.tabs{display:flex;gap:4px}
+.tabs a{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:10px 14px;border-radius:3px;border:1px solid transparent}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current="page"]{color:var(--ink);border-color:var(--ink);background:var(--card)}
+
+.banner{max-width:1160px;margin:14px auto 0;padding:0 clamp(16px,4vw,40px)}
+.banner p{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:3px;padding:9px 12px;background:var(--card)}
+.banner p.warn{color:var(--red);border-color:var(--red)}
+
+main{max-width:1160px;margin:0 auto;padding:28px clamp(16px,4vw,40px) 90px}
+.view{display:none}
+.view.on{display:block}
+.narrow{max-width:780px;margin:0 auto}
+.stack{display:grid;gap:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spread{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+
+/* buttons */
+.btn{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;padding:10px 15px;min-height:42px;border-radius:3px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.btn.primary{background:var(--ink);color:var(--card)}
+.btn.primary:hover{background:color-mix(in srgb,var(--ink) 86%,var(--red))}
+.btn.accent{background:var(--red);border-color:var(--red);color:var(--on-accent)}
+.btn.accent:hover{background:color-mix(in srgb,var(--red) 88%,#000)}
+.btn.ghost{border-color:transparent;color:var(--muted);padding-left:8px;padding-right:8px}
+.btn.ghost:hover{color:var(--ink);background:transparent;text-decoration:underline;text-underline-offset:3px}
+.btn.small{min-height:34px;padding:6px 10px;font-size:11px}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* index card */
+.card{background:var(--kt,var(--card));border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow);position:relative}
+.card-head{display:flex;justify-content:space-between;gap:12px;padding:13px 22px 10px}
+.card-head .no{color:var(--k,var(--red));font-weight:500}
+.kdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--k,var(--red));margin-right:7px;vertical-align:1px}
+.redrule{height:2px;background:var(--k,var(--red))}
+.card-body{padding:20px 22px 22px;display:grid;gap:14px}
+.n-text{white-space:pre-wrap;font-size:22px;line-height:1.45;text-wrap:pretty;overflow-wrap:anywhere}
+.n-text.quote{font-style:italic}
+.n-text.quote::before{content:"\201C";color:var(--k,var(--red));margin-left:-.45em;padding-right:.05em}
+.n-text.quote::after{content:"\201D";color:var(--k,var(--red))}
+.n-src{font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.5}
+.n-src b{font-weight:500;color:var(--ink)}
+.n-take{border-left:2px solid var(--k,var(--rule));padding-left:14px;font-size:18px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:11.5px;color:var(--muted);border:1px solid transparent;border-radius:20px;padding:2px 9px;background:var(--tag-bg)}
+button.tag{cursor:pointer}
+button.tag:hover{color:var(--ink);border-color:var(--ink)}
+.marg{display:grid;gap:12px;border-top:1px dashed var(--line);padding-top:14px}
+.marg-item{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.marg-item .when{font-family:var(--mono);font-size:11px;color:var(--k,var(--red));letter-spacing:.05em;white-space:nowrap;text-transform:uppercase}
+.marg-item .what{white-space:pre-wrap;font-size:17px;overflow-wrap:anywhere}
+
+/* reflect */
+.reflect-top{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+/* card-catalogue drawer: a wooden drawer of index cards that riffles and lifts today's card */
+.drawer{position:relative;width:280px;height:224px;flex:0 0 auto;padding:0;border:0;background:transparent;cursor:pointer;display:block;margin:0 0 -4px auto}
+.drawer:focus-visible{outline:2px solid var(--red);outline-offset:4px;border-radius:6px}
+.dw-inner{position:absolute;left:16px;right:16px;bottom:40px;height:78px;background:linear-gradient(#3e2a20,#5a3d2d);border-radius:4px 4px 0 0}
+.dw-cards{position:absolute;left:28px;right:28px;bottom:40px;height:110px;perspective:700px;display:block}
+.dw-card{position:absolute;left:0;right:0;height:98px;background:var(--dwc);border:1px solid rgba(37,52,79,.22);border-radius:3px 3px 0 0;transform-origin:50% 100%;transition:transform .34s cubic-bezier(.25,.75,.3,1),box-shadow .34s ease;display:block}
+.dw-card::before{content:"";position:absolute;left:9px;right:9px;top:15px;height:1.5px;background:var(--dwk)}
+.dw-card::after{content:"";position:absolute;left:9px;right:9px;top:24px;bottom:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 8px,rgba(97,120,145,.28) 8px,rgba(97,120,145,.28) 9px)}
+.dw-tab{position:absolute;top:-9px;width:36px;height:10px;background:var(--dwk);border-radius:3px 3px 0 0}
+.d-quote{--dwc:#FBE6DF;--dwk:#B0606C}
+.d-thought{--dwc:#EDEBCB;--dwk:#8D8B4C}
+.d-takeaway{--dwc:#E1E5EF;--dwk:#617891}
+.dw-card.flipped{transform:rotateX(-40deg)}
+.dw-card.lift{transform:translateY(-92px) rotate(-4deg);box-shadow:0 16px 26px -12px rgba(37,52,79,.5);z-index:60 !important}
+.dw-num{position:absolute;left:10px;top:1px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dwk);opacity:0;transition:opacity .3s ease .25s}
+.lift .dw-num{opacity:1}
+.dw-front{position:absolute;left:0;right:0;bottom:0;height:64px;background:linear-gradient(#80593f,#6F4D38 60%,#61432f);border-radius:5px;box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -2px 0 rgba(0,0,0,.15),0 12px 20px -12px rgba(0,0,0,.55);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.dw-label{border:2px solid #D5B893;background:#F7EEDD;border-radius:2px;padding:2px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#6F4D38;white-space:nowrap}
+.dw-pull{width:48px;height:12px;border:3px solid #D5B893;border-top:0;border-radius:0 0 26px 26px;display:block}
+@media (max-width:640px){.drawer{margin:4px auto 0;transform:scale(.9);transform-origin:bottom center}}
+.stats{display:flex;gap:18px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.stats b{font-weight:500;color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums}
+.reflect-card .n-text{font-size:clamp(23px,3vw,29px)}
+.timer-rule{height:3px;background:var(--red-soft)}
+.timer-rule span{display:block;height:100%;background:var(--k,var(--red));transform-origin:left center;transform:scaleX(1);transition:transform .3s linear}
+.ruled{--lh:32px;padding:8px 22px 6px;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--lh) - 1px),var(--rule) calc(var(--lh) - 1px),var(--rule) var(--lh));background-position:0 8px;background-origin:padding-box}
+.ruled textarea{display:block;width:100%;min-height:calc(var(--lh) * 5);border:0;background:transparent;resize:none;font:inherit;font-size:19px;line-height:var(--lh);color:var(--ink);padding:0;overflow:hidden}
+.ruled textarea:focus{outline:none}
+.ruled textarea::placeholder{color:var(--muted);opacity:.8;font-style:italic}
+.r-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 22px 16px;border-top:1px solid var(--line)}
+.r-time{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:22px;margin-right:auto;min-width:4ch}
+.timing .r-time{color:var(--k,var(--red))}
+.timeup .timer-rule{background:var(--k,var(--red))}
+.timeup .r-time{color:var(--k,var(--red))}
+.stamp{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--k,var(--red));border:2px solid var(--k,var(--red));border-radius:3px;padding:3px 8px;transform:rotate(-4deg);display:inline-block}
+.r-secondary{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:12px;align-items:center}
+.questions{margin-top:18px;display:grid;gap:10px}
+.q{display:block;width:100%;text-align:left;font:inherit;font-size:18px;color:var(--ink);background:transparent;border:0;border-left:2px solid var(--k,var(--red));padding:4px 0 4px 14px;cursor:pointer}
+.q:hover{background:color-mix(in srgb,var(--red) 6%,transparent)}
+.q small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+.empty{text-align:left;padding:34px 26px;display:grid;gap:14px}
+.empty h3{font-style:italic;font-size:26px}
+
+/* forms */
+form.card{padding:22px;display:grid;gap:22px}
+.field{display:grid;gap:7px}
+.field > label,.field > legend,.fs-legend{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+input[type=text],input[type=search],textarea,select{font:inherit;font-size:17px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:3px;padding:10px 12px;width:100%}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--red);outline-offset:-1px;border-color:transparent}
+textarea{resize:vertical;line-height:1.5;min-height:96px}
+#c-text{font-size:20px;min-height:170px;line-height:1.45}
+.hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.5}
+.hint.ok{color:var(--red)}
+.err{font-family:var(--mono);font-size:12px;color:var(--red)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.seg label{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border:1px solid var(--line);border-radius:3px;cursor:pointer;background:var(--card);color:var(--muted)}
+.seg label:hover{color:var(--ink)}
+.seg input:checked + label{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 -2px 0 var(--red)}
+#k-quote:checked + label{box-shadow:inset 0 -3px 0 var(--quote);background:var(--quote-tint)}
+#k-thought:checked + label{box-shadow:inset 0 -3px 0 var(--thought);background:var(--thought-tint)}
+#k-takeaway:checked + label{box-shadow:inset 0 -3px 0 var(--takeaway);background:var(--takeaway-tint)}
+#lk-quote:checked + label{box-shadow:inset 0 -3px 0 var(--quote)}
+#lk-thought:checked + label{box-shadow:inset 0 -3px 0 var(--thought)}
+#lk-takeaway:checked + label{box-shadow:inset 0 -3px 0 var(--takeaway)}
+.seg input:focus-visible + label{outline:2px solid var(--red);outline-offset:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.linkto{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px dashed var(--red);border-radius:3px;padding:8px 12px;font-family:var(--mono);font-size:12px;color:var(--red);background:var(--card)}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:34px 0 12px}
+
+/* library */
+.lib-tools{display:grid;gap:14px;margin:18px 0 22px}
+.shelf{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px}
+.spine{flex:0 0 auto;display:grid;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-left:5px solid var(--spine);border-radius:3px;padding:8px 12px;cursor:pointer;max-width:240px}
+.spine .t{font-style:italic;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spine .c{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.spine[aria-pressed="true"]{border-color:var(--ink);border-left-color:var(--spine-on);background:color-mix(in srgb,var(--spine) 18%,var(--card))}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filters select{width:auto;font-size:15px;padding:8px 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;align-items:start}
+.lcard{text-align:left;display:flex;flex-direction:column;gap:10px;background:var(--kt,var(--card));border:1px solid var(--line);border-radius:4px;padding:0 0 14px;box-shadow:var(--shadow);cursor:pointer;color:var(--ink);font:inherit;width:100%;transition:transform .15s ease,border-color .15s ease}
+.lcard:hover{transform:translateY(-2px);border-color:var(--muted)}
+.lc-head{display:flex;justify-content:space-between;gap:8px;padding:10px 16px 8px;border-bottom:2px solid var(--k,var(--red))}
+.lc-head .no{color:var(--k,var(--red))}
+.lc-text{padding:2px 16px 0;font-size:17px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
+.lc-text.quote{font-style:italic}
+.lc-src,.lc-meta{padding:0 16px;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.45}
+.lc-meta{display:flex;flex-wrap:wrap;gap:4px 12px}
+.lc-meta .hot{color:var(--k,var(--red))}
+.count{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+/* note view */
+.links{display:grid;gap:10px}
+.link-row{display:flex;gap:12px;align-items:flex-start;background:var(--kt,var(--card));border:1px solid var(--line);border-left:3px solid var(--k,var(--line));border-radius:3px;padding:12px 14px}
+.link-row .body{flex:1;min-width:0;cursor:pointer}
+.link-row .body p{font-size:16.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.link-row .body p.mono{font-size:11.5px;display:block;margin-bottom:3px}
+.link-row .body p.mono .no{color:var(--k,var(--red))}
+.chip[aria-pressed="true"] .sw-dot{background:transparent;width:auto;height:auto}
+.chip[aria-pressed="true"] .sw-dot::before{content:"✓"}
+.link-row .why{font-family:var(--mono);font-size:11.5px;color:var(--red);margin-top:4px;-webkit-line-clamp:unset}
+.addbox{display:grid;gap:10px}
+
+/* modal + toast */
+.modal{position:fixed;inset:0;background:rgba(12,18,22,.5);display:flex;align-items:flex-start;justify-content:center;padding:8vh 16px 16px;z-index:60}
+.modal-box{background:var(--card);border-radius:4px;max-width:580px;width:100%;max-height:82vh;overflow:auto;padding:20px 22px;display:grid;gap:14px;box-shadow:0 20px 50px -20px rgba(0,0,0,.5);border-top:3px solid var(--red)}
+.pick-list{display:grid;gap:8px}
+.pick{text-align:left;font:inherit;color:var(--ink);background:var(--kt,transparent);border:1px solid var(--line);border-left:3px solid var(--k,var(--line));border-radius:3px;padding:10px 12px;cursor:pointer;display:grid;gap:3px}
+.pick:hover{border-color:var(--ink)}
+.pick p{font-size:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--card);font-family:var(--mono);font-size:12.5px;padding:11px 16px;border-radius:3px;z-index:70;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.loading{font-family:var(--mono);font-size:12px;color:var(--muted);padding:40px 0}
+
+/* chips */
+.chip{font-family:var(--mono);font-size:12px;padding:6px 11px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;display:inline-flex;gap:7px;align-items:center;line-height:1.3}
+.chip:hover{color:var(--ink);border-color:var(--muted)}
+span.chip{cursor:default}
+.chip[aria-pressed="true"]{background:var(--fcx);color:#25344F;border-color:transparent}
+.sw-dot{width:9px;height:9px;border-radius:2px;background:var(--fcx,var(--line));flex:0 0 auto}
+.chip .x{border:0;background:transparent;color:inherit;cursor:pointer;font-size:15px;padding:0 0 0 2px;line-height:1;min-height:0}
+.chip .x:hover{color:var(--red)}
+.sw{position:relative;display:inline-block}
+.sw input{position:absolute;opacity:0;width:1px;height:1px}
+.sw label{width:36px;height:36px;border-radius:50%;display:block;background:var(--c);border:2px solid transparent;cursor:pointer}
+.sw input:checked + label{border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--card)}
+.sw input:focus-visible + label{outline:2px solid var(--red);outline-offset:2px}
+
+/* folders: manila folders with index cards peeking out */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:30px 22px;margin-top:26px;align-items:start}
+.ftile{position:relative;display:block;text-align:left;font:inherit;color:#25344F;background:transparent;border:0;padding:34px 0 0;cursor:pointer;width:100%}
+.f-tab{position:absolute;left:0;top:18px;width:44%;height:24px;background:var(--fc);border-radius:7px 12px 0 0;filter:brightness(.93)}
+.f-peek{position:absolute;left:16px;right:16px;top:2px;height:46px;display:block}
+.pk{position:absolute;top:4px;width:56%;height:44px;background:var(--dwc);border:1px solid rgba(37,52,79,.2);border-radius:2px;transition:transform .25s ease;display:block}
+.pk::before{content:"";position:absolute;left:6px;right:6px;top:8px;height:1.5px;background:var(--dwk)}
+.pk:nth-child(1){left:6%;transform:rotate(-4deg)}
+.pk:nth-child(2){left:24%;top:0;transform:rotate(1.5deg)}
+.pk:nth-child(3){left:42%;transform:rotate(5deg)}
+.ftile:hover .pk:nth-child(1){transform:rotate(-7deg) translateY(-7px)}
+.ftile:hover .pk:nth-child(2){transform:rotate(0) translateY(-10px)}
+.ftile:hover .pk:nth-child(3){transform:rotate(8deg) translateY(-6px)}
+.f-body{position:relative;display:grid;gap:8px;background:var(--fc);border-radius:0 7px 7px 7px;padding:18px 18px 16px;min-height:150px;box-shadow:var(--shadow);align-content:start}
+.f-name{font-style:italic;font-size:22px;line-height:1.2;font-weight:500}
+.f-thesis{font-size:15.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;opacity:.9}
+.f-count{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#4a5a73;margin-top:auto}
+.fd-head{background:var(--fc);color:#25344F;border-radius:0 7px 7px 7px;padding:22px 24px;position:relative;margin-top:40px;box-shadow:var(--shadow)}
+.fd-head::before{content:"";position:absolute;left:0;top:-22px;width:min(200px,45%);height:23px;background:var(--fc);border-radius:7px 12px 0 0;filter:brightness(.93)}
+.fd-thesis{font-size:21px;font-style:italic;line-height:1.4;border-left:3px solid rgba(37,52,79,.45);padding-left:14px;margin-top:12px;white-space:pre-wrap}
+.fd-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.fd-item{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start}
+.fd-n{font-family:var(--mono);font-size:13px;color:var(--muted);padding-top:14px;text-align:right;font-variant-numeric:tabular-nums}
+.fd-ctrl{display:flex;flex-direction:column;gap:0;margin:-6px -6px -6px 0}
+.fd-ctrl .btn{min-height:30px;padding:4px 8px;font-size:13px}
+
+/* standalone app: safe areas, sign-in gate, account */
+.mast{padding-top:calc(22px + env(safe-area-inset-top));padding-left:calc(clamp(16px,4vw,40px) + env(safe-area-inset-left));padding-right:calc(clamp(16px,4vw,40px) + env(safe-area-inset-right))}
+.mast-right{display:flex;align-items:center;gap:6px}
+input[type=email],input[type=password]{font:inherit;font-size:17px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:3px;padding:10px 12px;width:100%}
+.gate{position:fixed;inset:0;background:var(--desk);z-index:80;display:flex;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));overflow:auto}
+.gate-card{max-width:430px;width:100%;padding:30px 28px;display:grid;gap:18px}
+.gate-brand{display:flex;align-items:center;gap:14px}
+.sync{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.sync.ok{color:var(--thought)}
+.sync.off{color:var(--quote)}
+.kv{display:grid;gap:4px}
+.kv code{font-family:var(--mono);font-size:12px;background:var(--tag-bg);padding:6px 8px;border-radius:3px;overflow-wrap:anywhere}
+
+@media (max-width:640px){
+  .mast{align-items:center}
+  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);justify-content:space-around;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:40}
+  .tabs a{flex:1;text-align:center}
+  main{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+  .toast{bottom:84px}
+  .grid2{grid-template-columns:1fr}
+  .card-head,.card-body,.ruled,.r-controls{padding-left:16px;padding-right:16px}
+  .n-text{font-size:20px}
+  h2{font-size:26px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none !important;animation:none !important}
+}
+</style>
+</head>
+<body>
+<header class="mast">
+  <a class="wordmark" href="#reflect" aria-label="Commonplace, go to today’s card">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="12" y="6" width="30" height="21" rx="2.5" transform="rotate(9 27 16.5)" fill="var(--logo-back)"/>
+      <rect x="5" y="14" width="31" height="22" rx="2.5" fill="var(--logo-card)" stroke="var(--ink)" stroke-width="1.6"/>
+      <line x1="5.8" y1="20.5" x2="35.2" y2="20.5" stroke="var(--red)" stroke-width="1.8"/>
+      <line x1="10" y1="26" x2="31" y2="26" stroke="var(--muted)" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      <line x1="10" y1="30.5" x2="25" y2="30.5" stroke="var(--muted)" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      <circle cx="10" cy="17.3" r="1.3" fill="var(--red)"/>
+      <path d="M29 42 C 29.5 32, 37 25.5, 46.5 24.5 C 46.5 34, 39 42.5, 29 42 Z" fill="var(--logo-leaf)"/>
+      <path d="M30.5 40.5 C 35 35.5, 39.5 30.5, 45 26" stroke="var(--logo-card)" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <path d="M36 34.5 L 35.6 30.5 M 39.5 31 L 41.5 31.6" stroke="var(--logo-card)" stroke-width=".9" fill="none" stroke-linecap="round"/>
+    </svg>
+    <span><span class="wm">Commonplace</span>
+    <span class="wm-sub mono" id="m-count">Opening your cards…</span></span>
+  </a>
+  <div class="mast-right">
+  <nav class="tabs" aria-label="Sections">
+    <a href="#reflect" data-tab="reflect">Reflect</a>
+    <a href="#capture" data-tab="capture">Capture</a>
+    <a href="#library" data-tab="library">Library</a>
+    <a href="#folders" data-tab="folders">Folders</a>
+  </nav>
+  <button class="btn small ghost" type="button" id="acct-btn" aria-label="Account and backups">Account</button>
+  </div>
+</header>
+<div class="banner" id="banner" hidden></div>
+
+<main>
+  <!-- REFLECT -->
+  <section class="view narrow" id="view-reflect" aria-labelledby="r-h">
+    <div class="reflect-top">
+      <div class="stack" style="gap:10px">
+        <div>
+          <p class="label" id="r-date"></p>
+          <h2 id="r-h">Today’s card</h2>
+        </div>
+        <div class="stats" id="r-stats"></div>
+      </div>
+      <button type="button" class="drawer" id="r-drawer" hidden aria-label="Riffle the card drawer again">
+        <span class="dw-inner"></span>
+        <span class="dw-cards" id="dw-cards"></span>
+        <span class="dw-front"><span class="dw-label" id="dw-label"></span><span class="dw-pull"></span></span>
+      </button>
+    </div>
+    <p class="loading" id="r-loading">Fetching today’s card…</p>
+    <div class="card empty" id="r-empty" hidden>
+      <h3>Your card box is empty</h3>
+      <p>File a quote from what you’re reading, a line from a podcast, or a thought you had on a walk. Each day, Reflect draws one card at random and gives you five minutes to think it through.</p>
+      <div class="row">
+        <a class="btn primary" href="#capture">File your first card</a>
+        <button class="btn" type="button" data-act="examples">Add 3 example cards</button>
+      </div>
+    </div>
+    <div id="r-main" hidden>
+      <article class="card reflect-card" id="r-card-wrap">
+        <div id="r-card"></div>
+        <div class="timer-rule" aria-hidden="true"><span id="r-bar"></span></div>
+        <div class="ruled">
+          <label for="r-text" class="label" style="position:absolute;left:-9999px">Your reflection</label>
+          <textarea id="r-text" rows="5" placeholder="Where does this take you? Agree, push back, connect it to something in your week…"></textarea>
+        </div>
+        <div class="r-controls">
+          <span class="r-time" id="r-time" aria-live="off">5:00</span>
+          <span id="r-stamp"></span>
+          <button class="btn" type="button" id="r-start">Start 5 minutes</button>
+          <button class="btn primary" type="button" id="r-save">Add to this card</button>
+        </div>
+      </article>
+      <div class="r-secondary">
+        <button class="btn ghost" type="button" id="r-ask" hidden>Ask Claude for questions</button>
+        <button class="btn ghost" type="button" id="r-ponder">Just pondered it</button>
+        <button class="btn ghost" type="button" id="r-connect">Connect to another card</button>
+        <button class="btn ghost" type="button" id="r-draw">Draw a different card</button>
+        <button class="btn ghost" type="button" id="r-open">Open card</button>
+      </div>
+      <div class="questions" id="r-questions" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- CAPTURE -->
+  <section class="view narrow" id="view-capture" aria-labelledby="c-h">
+    <div class="spread" style="margin-bottom:16px">
+      <div>
+        <p class="label" id="c-eyebrow">New card</p>
+        <h2 id="c-h">File something worth keeping</h2>
+      </div>
+    </div>
+    <div id="c-linkto" style="margin-bottom:14px"></div>
+    <form class="card" id="c-form" novalidate>
+      <fieldset class="field">
+        <legend class="fs-legend" style="margin-bottom:7px">What is it</legend>
+        <div class="seg">
+          <input type="radio" name="kind" id="k-quote" value="quote" checked><label for="k-quote">Quote</label>
+          <input type="radio" name="kind" id="k-thought" value="thought"><label for="k-thought">My thought</label>
+          <input type="radio" name="kind" id="k-takeaway" value="takeaway"><label for="k-takeaway">Takeaway</label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="c-text" id="c-text-label">The quote</label>
+        <textarea id="c-text" placeholder="Paste or type it here"></textarea>
+        <p class="hint" id="c-parsed">Tip: in Apple Books, select a passage, tap Share, then Copy, and paste it here. The title and author fill in for you.</p>
+        <p class="err" id="c-err" hidden></p>
+      </div>
+      <div class="field">
+        <label for="c-take">Your take <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+        <textarea id="c-take" placeholder="Why did this stand out?"></textarea>
+      </div>
+      <fieldset class="field">
+        <legend class="fs-legend" style="margin-bottom:7px">Source</legend>
+        <div class="seg" id="c-src-seg">
+          <input type="radio" name="src" id="s-book" value="book" checked><label for="s-book">Book</label>
+          <input type="radio" name="src" id="s-podcast" value="podcast"><label for="s-podcast">Podcast</label>
+          <input type="radio" name="src" id="s-article" value="article"><label for="s-article">Article</label>
+          <input type="radio" name="src" id="s-video" value="video"><label for="s-video">Video</label>
+          <input type="radio" name="src" id="s-conversation" value="conversation"><label for="s-conversation">Conversation</label>
+          <input type="radio" name="src" id="s-mind" value="mind"><label for="s-mind">My own head</label>
+        </div>
+        <div class="grid2" style="margin-top:10px">
+          <div class="field"><label for="c-title" id="c-title-label">Title</label><input type="text" id="c-title" list="titles" autocomplete="off"></div>
+          <div class="field"><label for="c-author" id="c-author-label">Author</label><input type="text" id="c-author" autocomplete="off"></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label for="c-loc" id="c-loc-label">Page or chapter</label><input type="text" id="c-loc" autocomplete="off"></div>
+        <datalist id="titles"></datalist>
+      </fieldset>
+      <div class="field">
+        <label for="c-tags">Tags <span style="text-transform:none;letter-spacing:0">(comma separated)</span></label>
+        <input type="text" id="c-tags" placeholder="habits, stoicism, work" autocomplete="off">
+        <div class="tags" id="c-tag-suggest"></div>
+      </div>
+      <div class="field" id="c-folders-field">
+        <span class="fs-legend" id="c-folders-label">Folders <span style="text-transform:none;letter-spacing:0">(optional, pick any)</span></span>
+        <div class="row" style="gap:6px" id="c-folders" role="group" aria-labelledby="c-folders-label"></div>
+      </div>
+      <div class="spread">
+        <div class="row">
+          <button class="btn accent" type="submit" id="c-submit">File this card</button>
+          <button class="btn" type="button" id="c-cancel" hidden>Cancel</button>
+        </div>
+        <button class="btn ghost" type="button" id="c-clear">Clear source and tags</button>
+      </div>
+    </form>
+    <div id="c-recent-wrap">
+      <div class="section-title"><h3>Recently filed</h3><a class="btn ghost" href="#library">All cards</a></div>
+      <div class="links" id="c-recent"></div>
+    </div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section class="view" id="view-library" aria-labelledby="l-h">
+    <div class="spread">
+      <div>
+        <p class="label" id="l-eyebrow">Card catalogue</p>
+        <h2 id="l-h">Library</h2>
+      </div>
+      <div class="row">
+        <button class="btn small" type="button" data-act="export-md">Copy as Markdown</button>
+        <button class="btn small" type="button" data-act="export-json">Copy backup</button>
+        <a class="btn small primary" href="#capture">New card</a>
+      </div>
+    </div>
+    <div class="lib-tools">
+      <input type="search" id="l-q" placeholder="Search words, sources, tags, your notes" aria-label="Search cards">
+      <div class="shelf" id="l-shelf" aria-label="Sources"></div>
+      <div class="filters">
+        <div class="seg" id="l-kinds">
+          <input type="radio" name="lk" id="lk-all" value="all" checked><label for="lk-all">All</label>
+          <input type="radio" name="lk" id="lk-quote" value="quote"><label for="lk-quote">Quotes</label>
+          <input type="radio" name="lk" id="lk-thought" value="thought"><label for="lk-thought">Thoughts</label>
+          <input type="radio" name="lk" id="lk-takeaway" value="takeaway"><label for="lk-takeaway">Takeaways</label>
+        </div>
+        <select id="l-tag" aria-label="Filter by tag"></select>
+        <select id="l-folder" aria-label="Filter by folder"></select>
+        <select id="l-sort" aria-label="Sort">
+          <option value="new">Newest first</option>
+          <option value="old">Oldest first</option>
+          <option value="stale">Longest since revisited</option>
+          <option value="linked">Most connected</option>
+          <option value="grown">Most added to</option>
+        </select>
+        <span class="count" id="l-count"></span>
+      </div>
+    </div>
+    <div class="grid" id="l-grid"></div>
+  </section>
+
+  <!-- FOLDERS -->
+  <section class="view" id="view-folders" aria-labelledby="f-h">
+    <div class="spread">
+      <div><p class="label">Ideas and theses</p><h2 id="f-h">Folders</h2></div>
+      <button class="btn primary" type="button" data-newfolder="1">New folder</button>
+    </div>
+    <p class="hint" style="margin-top:10px;max-width:64ch">Gather cards around an idea you’re working out. A card can sit in any number of folders, and adding it to one never takes it out of your library or other folders.</p>
+    <div class="fgrid" id="f-grid"></div>
+  </section>
+
+  <!-- FOLDER -->
+  <section class="view narrow" id="view-folder" aria-label="Folder">
+    <div class="row" style="justify-content:space-between">
+      <a class="btn ghost" href="#folders" style="padding-left:0">← Folders</a>
+      <div class="row" id="fd-tools">
+        <button class="btn small accent" type="button" id="fd-pdf">Export as PDF</button>
+        <button class="btn small" type="button" id="fd-md">Copy as Markdown</button>
+        <button class="btn small" type="button" id="fd-edit">Edit folder</button>
+        <button class="btn small ghost" type="button" id="fd-delete">Delete</button>
+      </div>
+    </div>
+    <div id="fd-missing" class="card empty" hidden><h3>This folder isn’t here</h3><p>It may have been deleted. Its cards are still in your library.</p><a class="btn" href="#folders">Back to folders</a></div>
+    <div id="fd-main">
+      <div class="fd-head" id="fd-head"></div>
+      <div class="section-title"><h3>Cards, in order</h3>
+        <div class="row"><button class="btn small" type="button" id="fd-add">Add cards</button><button class="btn small" type="button" id="fd-new">Write a new card here</button></div>
+      </div>
+      <ol class="fd-list" id="fd-list"></ol>
+    </div>
+  </section>
+
+  <!-- NOTE -->
+  <section class="view narrow" id="view-note" aria-label="Card">
+    <div class="row" style="margin-bottom:14px;justify-content:space-between">
+      <a class="btn ghost" href="#library" style="padding-left:0">← Library</a>
+      <div class="row">
+        <button class="btn small" type="button" id="n-reflect">Reflect on this today</button>
+        <button class="btn small" type="button" id="n-edit">Edit</button>
+        <button class="btn small" type="button" id="n-dup">Duplicate</button>
+        <button class="btn small ghost" type="button" id="n-delete">Delete</button>
+      </div>
+    </div>
+    <div id="n-card"></div>
+    <div id="n-missing" class="card empty" hidden><h3>This card isn’t here</h3><p>It may have been deleted.</p><a class="btn" href="#library">Back to the library</a></div>
+    <div id="n-rest">
+      <div class="section-title"><h3>Add to it</h3></div>
+      <div class="addbox">
+        <label for="n-expand" style="position:absolute;left:-9999px">Add a thought to this card</label>
+        <textarea id="n-expand" placeholder="A new thought, an example, a disagreement…"></textarea>
+        <div class="row"><button class="btn primary" type="button" id="n-expand-save">Add to card</button></div>
+      </div>
+      <div class="section-title"><h3>Tags and folders</h3><button class="btn small" type="button" id="n-folder-add">Add to folder</button></div>
+      <div class="stack" style="gap:12px">
+        <div class="row" style="gap:6px" id="n-folders"></div>
+        <div class="row" style="gap:6px" id="n-tags"></div>
+        <div class="row" style="gap:8px"><input type="text" id="n-tag-in" list="taglist" placeholder="Add a tag" aria-label="Add a tag" style="max-width:260px" autocomplete="off"><button class="btn small" type="button" id="n-tag-add">Add tag</button></div>
+        <datalist id="taglist"></datalist>
+        <p class="hint">A card can sit in as many folders as you like. Every folder points to this same card, so an edit shows up everywhere. Want a separate version to rework? Use Duplicate.</p>
+      </div>
+      <div class="section-title"><h3>Connections</h3>
+        <div class="row">
+          <button class="btn small" type="button" id="n-link">Connect a card</button>
+          <button class="btn small" type="button" id="n-newlinked">Write a connected card</button>
+        </div>
+      </div>
+      <div class="links" id="n-links"></div>
+      <div id="n-suggest-wrap" hidden>
+        <div class="section-title"><h3>Possible connections</h3><button class="btn small" type="button" id="n-suggest">Ask Claude to look</button></div>
+        <div class="links" id="n-suggest-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <h3 id="m-title"></h3>
+    <div id="m-body"></div>
+    <div class="row" id="m-actions" style="justify-content:flex-end"></div>
+  </div>
+</div>
+<div class="gate" id="gate" hidden>
+  <div class="card gate-card">
+    <div class="gate-brand"><svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="12" y="6" width="30" height="21" rx="2.5" transform="rotate(9 27 16.5)" fill="var(--logo-back)"/>
+      <rect x="5" y="14" width="31" height="22" rx="2.5" fill="var(--logo-card)" stroke="var(--ink)" stroke-width="1.6"/>
+      <line x1="5.8" y1="20.5" x2="35.2" y2="20.5" stroke="var(--red)" stroke-width="1.8"/>
+      <line x1="10" y1="26" x2="31" y2="26" stroke="var(--muted)" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      <line x1="10" y1="30.5" x2="25" y2="30.5" stroke="var(--muted)" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      <circle cx="10" cy="17.3" r="1.3" fill="var(--red)"/>
+      <path d="M29 42 C 29.5 32, 37 25.5, 46.5 24.5 C 46.5 34, 39 42.5, 29 42 Z" fill="var(--logo-leaf)"/>
+      <path d="M30.5 40.5 C 35 35.5, 39.5 30.5, 45 26" stroke="var(--logo-card)" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <path d="M36 34.5 L 35.6 30.5 M 39.5 31 L 41.5 31.6" stroke="var(--logo-card)" stroke-width=".9" fill="none" stroke-linecap="round"/>
+    </svg><span><span class="wm">Commonplace</span><span class="wm-sub mono">Your commonplace book</span></span></div>
+    <div id="gate-auth" class="stack" style="gap:16px">
+      <p id="gate-sub">Sign in to your card box. Your cards stay in sync across your iPad, iPhone and Mac, and work offline too.</p>
+      <form id="gate-form" class="stack" style="gap:14px" novalidate>
+        <div class="field"><label for="g-email">Email</label><input type="email" id="g-email" autocomplete="email" autocapitalize="off" spellcheck="false"></div>
+        <div class="field"><label for="g-pass">Password</label><input type="password" id="g-pass" autocomplete="current-password"></div>
+        <p class="err" id="g-err" hidden></p>
+        <button class="btn accent" type="submit" id="g-submit" style="justify-content:center">Sign in</button>
+      </form>
+      <div class="row" style="justify-content:space-between;gap:4px">
+        <button type="button" class="btn ghost" id="g-toggle" style="padding-left:0">New here? Create an account</button>
+        <button type="button" class="btn ghost" id="g-forgot">Forgot password</button>
+      </div>
+    </div>
+    <div id="gate-setup" class="stack" style="gap:12px" hidden>
+      <h3>Almost there</h3>
+      <p>This copy of Commonplace isn’t connected to your Firebase project yet. Open <b>firebase-config.js</b> in your GitHub repository and paste in your project’s settings. The README walks you through it.</p>
+      <p class="err" id="gate-setup-err" hidden></p>
+    </div>
+    <p class="hint" id="gate-loading">Opening your card box…</p>
+  </div>
+</div>
+<div class="gate" id="lock" hidden>
+  <div class="card gate-card" style="text-align:left">
+    <div class="gate-brand"><svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="12" y="6" width="30" height="21" rx="2.5" transform="rotate(9 27 16.5)" fill="var(--logo-back)"/>
+      <rect x="5" y="14" width="31" height="22" rx="2.5" fill="var(--logo-card)" stroke="var(--ink)" stroke-width="1.6"/>
+      <line x1="5.8" y1="20.5" x2="35.2" y2="20.5" stroke="var(--red)" stroke-width="1.8"/>
+      <line x1="10" y1="26" x2="31" y2="26" stroke="var(--muted)" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      <line x1="10" y1="30.5" x2="25" y2="30.5" stroke="var(--muted)" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      <circle cx="10" cy="17.3" r="1.3" fill="var(--red)"/>
+      <path d="M29 42 C 29.5 32, 37 25.5, 46.5 24.5 C 46.5 34, 39 42.5, 29 42 Z" fill="var(--logo-leaf)"/>
+      <path d="M30.5 40.5 C 35 35.5, 39.5 30.5, 45 26" stroke="var(--logo-card)" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <path d="M36 34.5 L 35.6 30.5 M 39.5 31 L 41.5 31.6" stroke="var(--logo-card)" stroke-width=".9" fill="none" stroke-linecap="round"/>
+    </svg><span><span class="wm">Commonplace</span><span class="wm-sub mono">Locked</span></span></div>
+    <p id="lock-sub">Your card box is locked. Unlock it with Face ID or Touch ID.</p>
+    <button class="btn accent" type="button" id="lock-go" style="justify-content:center;min-height:52px;font-size:13px">Unlock</button>
+    <p class="err" id="lock-err" hidden></p>
+    <button class="btn ghost" type="button" id="lock-pw-toggle" style="padding-left:0;justify-self:start">Use password instead</button>
+    <form id="lock-pw" class="stack" style="gap:12px" hidden novalidate>
+      <div class="field"><label for="lock-pass">Password for <span id="lock-email"></span></label><input type="password" id="lock-pass" autocomplete="current-password"></div>
+      <button class="btn" type="submit" id="lock-pw-go" style="justify-content:center">Unlock with password</button>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="firebase-config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
